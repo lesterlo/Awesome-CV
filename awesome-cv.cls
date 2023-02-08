@@ -2,9 +2,12 @@
 % Awesome CV Class File
 %
 % This class has been downloaded from:
+% https://github.com/lesterlo/Awesome-CV
+% which forked from:
 % https://github.com/posquit0/Awesome-CV
 %
 % Author:
+% Lester Lo <>
 % Claud D. Park <posquit0.bj@gmail.com>
 % http://www.posquit0.com
 %
@@ -90,6 +93,9 @@
 }
 % Solves issues Warning: File `cv.out' has changed
 \RequirePackage{bookmark}
+%Add 2 missing package
+\RequirePackage{tikz}
+\RequirePackage{xparse}
 
 %-------------------------------------------------------------------------------
 %                Configuration for directory locations
@@ -243,11 +249,18 @@
 % Usage: \firstname{<firstname>}
 % Usage: \lastname{<lastname>}
 % Usage: \familyname{<familyname>}
-\newcommand*{\name}[2]{\def\@firstname{#1}\def\@lastname{#2}}
+% \newcommand*{\name}[2]{\def\@firstname{#1}\def\@lastname{#2}}
+\NewDocumentCommand{\name}{O{} m m}
+{
+  \ifthenelse{\equal{#1}{}}{}{\def\@nickname{#1}} %Set only when there have optional arg
+  \def\@firstname{#2}
+  \def\@lastname{#3} 
+}
 \newcommand*{\firstname}[1]{\def\@firstname{#1}}
 \newcommand*{\lastname}[1]{\def\@lastname{#1}}
 \newcommand*{\familyname}[1]{\def\@lastname{#1}}
 \def\@familyname{\@lastname}
+\newcommand*{\nickname}[1]{\def\@nickname{#1}}
 
 % Define writer's address
 % Usage: \address{<address>}
@@ -421,29 +434,30 @@
 % Use to execute conditional statements by checking empty string
 \newcommand*{\ifempty}[3]{\ifthenelse{\isempty{#1}}{#2}{#3}}
 
+%-- helper function
+\newlength{\photodim}
+\newcommand*{\drawphoto}{%
+  \ifthenelse{\isundefined{\@photo}}{}{%   
+    \ifthenelse{\equal{\@photoshape}{circle}}%
+      {\setlength{\photodim}{1.3cm}}%
+      {\setlength{\photodim}{1.8cm}}%
+    \ifthenelse{\equal{\@photoedge}{edge}}%
+      {\def\@photoborder{darkgray}}%
+      {\def\@photoborder{none}}%
+    \begin{tikzpicture}%
+      \node[\@photoshape, draw=\@photoborder, line width=0.3mm, inner sep=\photodim, fill overzoom image=\@photo] () {};
+    \end{tikzpicture}
+  }%
+}
 
 %-------------------------------------------------------------------------------
 %                Commands for elements of CV structure
 %-------------------------------------------------------------------------------
 % Define a header for CV
 % Usage: \makecvheader
+\newlength{\headertextwidth}
+\newlength{\headerphotowidth}
 \newcommand*{\makecvheader}[1][C]{%
-  \newcommand*{\drawphoto}{%
-    \ifthenelse{\isundefined{\@photo}}{}{%
-      \newlength{\photodim}
-      \ifthenelse{\equal{\@photoshape}{circle}}%
-        {\setlength{\photodim}{1.3cm}}%
-        {\setlength{\photodim}{1.8cm}}%
-      \ifthenelse{\equal{\@photoedge}{edge}}%
-        {\def\@photoborder{darkgray}}%
-        {\def\@photoborder{none}}%
-      \begin{tikzpicture}%
-        \node[\@photoshape, draw=\@photoborder, line width=0.3mm, inner sep=\photodim, fill overzoom image=\@photo] () {};
-      \end{tikzpicture}
-    }%
-  }
-  \newlength{\headertextwidth}
-  \newlength{\headerphotowidth}
   \ifthenelse{\isundefined{\@photo}}{
     \setlength{\headertextwidth}{\textwidth}
     \setlength{\headerphotowidth}{0cm}
@@ -457,6 +471,7 @@
   \begin{minipage}[c]{\headertextwidth}
     \ifthenelse{\equal{#1}{L}}{\raggedright}{\ifthenelse{\equal{#1}{R}}{\raggedleft}{\centering}}
     \headerfirstnamestyle{\@firstname}\headerlastnamestyle{{}\acvHeaderNameDelim\@lastname}%
+    \ifthenelse{\isundefined{\@nickname}}{}{\headerfirstnamestyle{\hspace{0.3cm}(\@nickname)}}
     \\[\acvHeaderAfterNameSkip]%
     \ifthenelse{\isundefined{\@position}}{}{\headerpositionstyle{\@position\\[\acvHeaderAfterPositionSkip]}}%
     \ifthenelse{\isundefined{\@address}}{}{\headeraddressstyle{\@address\\[\acvHeaderAfterAddressSkip]}}%
